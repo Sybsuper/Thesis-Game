@@ -2,12 +2,15 @@ import getopt
 import sys
 import threading
 from configparser import ConfigParser
-from os import path, getcwd
+from os import path
 
 import console
+from settings import *
 from cfg.cfgparser import CfgParser
 from core.controller.camera import Camera
 from core.prefabs.sprites import *
+# from core.UI.healthbar import Healthbar
+from core.UI.ui import UI
 from world.chunk import Chunk
 from world.entity.entitytypes import EntityTypes
 from world.material.material import Material
@@ -39,10 +42,10 @@ class Game:
 		self.graphics = assets.populate_assets()
 		self.load_data()
 		self.world = None
-		self.gamedir = getcwd()
+
 		# Make console
 		self.console = console.Console(self)
-		self.consoleThread = threading.Thread(target=self.console.run, daemon=True)
+		self.consoleThread = threading.Thread(name="console", target=self.console.run, daemon=True)
 
 	def load_data(self):
 		game_folder = path.dirname(__file__)
@@ -57,19 +60,22 @@ class Game:
 		cfgp.read()
 
 	def new(self):
+		# initialize all variables and do all the setup for a new game
 		# Initialize all variables and do all the setup for a new game
 		self.sprites = pygame.sprite.Group()
 		self.walls = pygame.sprite.Group()
 		self.trees = pygame.sprite.Group()
-		self.world = World(path.join(path.dirname(__file__), "saves/world1"))
+		self.world = World(path.join(path.dirname(__file__), "saves/world1"), self)
 		self.world.load()
-		self.player = Player(self, 20, 20, 0, 350, 0, 0)
+		self.player = Player(self, 100, 100, 0, 350, 0, 0)
 		self.spawner = Spawner(self, 64, 1)
 
 		# Initialize camera map specific
 		# TODO: might have to change the camera's settings
 		self.camera = Camera(48, 16)
 		# self.items = item.populate_items(self.graphics)
+
+		UI.load(self)
 
 		self.consoleThread.start()
 		print("Reading console input")
@@ -116,21 +122,18 @@ class Game:
 
 				for ent in self.world.entities:
 					if ent is not None and ent.entitytype.image is not None:
+						# logging.debug(f"ent: {ent.pos}, {ent.chunk}")
 						self.screen.blit(ent.entitytype.image, self.camera.applyraw(
 							ent.entitytype.rect.move((ent.chunk[0] * 16 + (ent.pos.x / TILESIZE)) * TILESIZE,
-													 (ent.chunk[1] * 16 + (ent.pos.y / TILESIZE)) * TILESIZE)
+														(ent.chunk[1] * 16 + (ent.pos.y / TILESIZE)) * TILESIZE)
 						))
 
 		self.screen.blit(self.player.image, self.camera.apply(self.player))
 
-		# Healthbar van de speler
-		currenthealthB = pygame.Rect(50, 50, 180, 50)
-		pygame.draw.rect(self.screen, (0, 200, 0), currenthealthB)
-		currenthealthT = pygame.font.SysFont('Corbel', 40).render('100', True, (255, 255, 255))
-		self.screen.blit(currenthealthT, (currenthealthB.x + 60, currenthealthB.y))
+		# Display UI
+		UI.draw(self.screen)
 
 		# Collision debug rects
-
 		# self.screen.blit(Materials.GRASS.value.image,self.camera.apply(self.player))
 		# for sprite in self.sprites:
 		#	self.screen.blit(sprite.image, self.camera.apply(sprite))

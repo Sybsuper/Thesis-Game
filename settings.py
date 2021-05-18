@@ -1,3 +1,10 @@
+import os
+import logging
+
+
+logging.basicConfig(level=logging.DEBUG,
+					format='[%(levelname)s] (%(threadName)-10s) %(message)s')
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 DARKGREY = (40, 40, 40)
@@ -16,6 +23,8 @@ BGCOLOR = DARKGREY
 TILESIZE = 64
 GRIDWIDTH = WIDTH / TILESIZE
 GRIDHEIGHT = HEIGHT / TILESIZE
+
+GAMEDIR = os.getcwd()
 
 # Player settings
 PLAYERSPEED = 350
