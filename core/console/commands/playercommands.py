@@ -14,7 +14,7 @@ class CommandsPlayer:
 		@staticmethod
 		def execute(*args, **kwargs):
 			try:
-				it = Items[(kwargs['item']).upper]
+				it = Items[(kwargs['item']).upper()].value
 				if it is not None:
 					ConsoleHelper.Globals.game.player.inventory.add_new_item(it,
 																			1 if 'quantity' not in kwargs else int(
@@ -26,7 +26,8 @@ class CommandsPlayer:
 				try:
 					if len(args) == 0:
 						raise ArgumentException
-					it = Items.getItemFromName(args[0])
+					# TODO: add error handling and more itemname support (id, idstring, itemname)
+					it = Items[args[0].upper()].value
 					if it is not None:
 						ConsoleHelper.Globals.game.player.inventory.add_new_item(it,
 																				1 if len(args) < 2 else int(args[1]))
@@ -141,7 +142,29 @@ class CommandsPlayer:
 			if len(args) == 1:  # we have an argc value
 				if args[0] == 1 and parameter == "":
 					yield "give"
-				for key in CommandsPlayer.XP.parameters[args[0] - 1]:
+				for key in CommandsPlayer.ShowPos.parameters[args[0] - 1]:
 					if key.startswith(parameter):
 						if key != "":
 							yield key
+
+	# TODO: Placeholder to set an item on a slot
+	class SetSlot:
+		names = ["setslot", "slot"]
+		parameters: list[int, list[str]] = []
+
+		@staticmethod
+		def execute(*args, **kwargs):
+			try:
+				if len(args) < 2:
+					raise ArgumentException
+			except ArgumentException as ae:
+				Console.error(thread="CONSOLE", message=ae)
+				return
+
+			it = Items[args[1].upper()].value
+			# ConsoleHelper.Globals.game.player.inventory.slots.get()[int(args[0])] = it
+			ConsoleHelper.Globals.game.player.inventory.slots.get()[int(args[0]) - 1] = it
+
+		@staticmethod
+		def fetchAutocompleteOptions(parameter, *args):
+			pass

@@ -2,7 +2,7 @@ from enum import Enum
 
 import pygame
 
-import assets
+from core.assets.assets import Assets
 from core.items.item import Item
 
 
@@ -21,7 +21,7 @@ class Items(Enum):
 	GUN = Item("Gun", "gun", 27, 1)
 
 	# Materials
-	WOOD = Item("Wood", "wood", 50, 999)
+	OAK_WOOD = Item("Oak Wood", "oak_wood", 50, 999)
 	STONE = Item("Stone", "stone", 51, 999)
 	IRON = Item("Iron", "iron", 52, 999)
 	SULFUR = Item("Sulfur", "sulfur", 53, 999)
@@ -53,12 +53,17 @@ class Items(Enum):
 		return None
 
 	@staticmethod
-	def load(game):
+	def load():
 		for it in Items:
 			if it.value.texturePath is not None:
-				it.value.image = pygame.transform.scale(
-					assets.get_asset_from_name(game.graphics, it.value.texturePath).image, (64, 64))
-				it.value.rect = it.value.image.get_rect()
+				# im = asset.get_asset_from_name(game.graphics, it.value.texturePath)
+				# im = Assets.getFromTexturePath(it.value.texturePath)
+				try:
+					it.value.image = pygame.transform.scale(
+						Assets[it.value.texturePath.upper()].value.image, (64, 64))
+					it.value.rect = it.value.image.get_rect()
+				except KeyError:
+					pass
 
 	@staticmethod
 	def getItemFromName(n):
